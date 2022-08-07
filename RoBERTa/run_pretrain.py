@@ -44,7 +44,7 @@ model = nn.DataParallel(model, device_ids = device_ids)
 
 if "from_cp" in config:
 
-    from_cp = os.path.join(config["from_cp"])
+    from_cp = config["from_cp"]
     checkpoint = torch.load(from_cp, map_location = 'cpu')
 
     cp_pos_encoding = checkpoint['model_state_dict']['model.embeddings.position_embeddings.weight'].data.numpy()
