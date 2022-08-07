@@ -1,30 +1,26 @@
 from model_wrapper import ModelForMaskedLM
 import torch
 import torch.nn as nn
-import time
 import os
 import json
 import pickle
 import numpy as np
 import argparse
 import utils
-from torch.utils.data import DataLoader
-from torch.utils.data.dataset import Dataset
-import gzip
+from transformers import RobertaTokenizerFast
+import torch
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model", type = str, help = "model", dest = "model", required = True)
 args = parser.parse_args()
 
-curr_path = os.path.dirname(os.path.realpath(__file__))
-
-with open(os.path.join(curr_path, args.model, 'config.json'), 'r') as f:
+with open(os.path.join(args.model, 'config.json'), 'r') as f:
     config = json.load(f)
 
 model_config = config["model"]
 pretraining_config = config["pretraining_setting"]
 gpu_config = config["gpu_setting"]
-checkpoint_dir = os.path.join(curr_path, args.model, 'model')
+checkpoint_dir = os.path.join(args.model, 'model')
 dataset = config["dataset"]
 
 if not os.path.exists(checkpoint_dir):
@@ -48,7 +44,7 @@ model = nn.DataParallel(model, device_ids = device_ids)
 
 if "from_cp" in config:
 
-    from_cp = os.path.join(curr_path, config["from_cp"])
+    from_cp = os.path.join(config["from_cp"])
     checkpoint = torch.load(from_cp, map_location = 'cpu')
 
     cp_pos_encoding = checkpoint['model_state_dict']['model.embeddings.position_embeddings.weight'].data.numpy()
@@ -69,7 +65,7 @@ if "from_cp" in config:
 
 elif config["from_pretrained_roberta"]:
 
-    roberta_path = os.path.join(curr_path, "roberta-base-pretrained.pickle")
+    roberta_path = os.path.join("roberta-base-pretrained.pickle")
     with open(roberta_path, "rb") as f:
         weights = pickle.load(f)
 
@@ -84,106 +80,17 @@ elif config["from_pretrained_roberta"]:
 else:
     print("Model randomly initialized", flush = True)
 
-optimizer = torch.optim.AdamW(
-    model.parameters(),
-    lr = pretraining_config["learning_rate"],
-    betas = (0.9, 0.999), eps = 1e-6, weight_decay = 0.01
-)
+tokenizer = RobertaTokenizerFast.from_pretrained("roberta-base")
 
-lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(
-    optimizer = optimizer,
-    max_lr = pretraining_config["learning_rate"],
-    pct_start = pretraining_config["warmup"],
-    anneal_strategy = "linear",
-    epochs = pretraining_config["epoch"],
-    steps_per_epoch = pretraining_config["batches_per_epoch"]
-)
+inputs = tokenizer("The [MASK] of France is Paris.", return_tensors="pt")
 
-amp_scaler = torch.cuda.amp.GradScaler() if model_config["mixed_precision"] else None
+with torch.no_grad():
+    logits = model(**inputs)
 
-start_epoch = 0
-inst_pass = 0
-for epoch in reversed(range(pretraining_config["epoch"])):
-    checkpoint_path = os.path.join(checkpoint_dir, f"cp-{epoch:04}.cp")
-    if os.path.exists(checkpoint_path):
-        checkpoint = torch.load(checkpoint_path, map_location = 'cpu')
-        utils.load_model_ignore_mismatch(model.module, checkpoint['model_state_dict'])
-        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-        lr_scheduler.load_state_dict(checkpoint['lr_scheduler_state_dict'])
-        start_epoch = checkpoint["epoch"] + 1
-        inst_pass = checkpoint["inst_pass"]
-        print("Model restored", checkpoint_path)
-        break
+print('logits', logits, logits.size())
 
-########################### Running Model ###########################
+# retrieve index of [MASK]
+mask_token_index = (inputs.input_ids == tokenizer.mask_token_id)[0].nonzero(as_tuple=True)[0]
 
-log_f = open(os.path.join(checkpoint_dir, "pretrain_output.log"), "a+")
-
-model.train()
-
-init_t = time.time()
-
-for epoch in range(start_epoch, pretraining_config["epoch"]):
-    
-    data_t0 = time.time()
-    load_path = os.path.join(curr_path, f"{dataset}/epoch-{epoch:04}.pickle.gzip")
-    with gzip.open(load_path, "rb") as f:
-        cache_batch = pickle.load(f)
-    data_t1 = time.time()
-    print(f"loaded {load_path}", round(data_t1 - data_t0, 4))
-    assert len(cache_batch) == pretraining_config["batches_per_epoch"]
-    
-    batch_size = cache_batch[0]["input_ids"].shape[0]
-    accumu_steps = utils.compute_accumu_step(batch_size, len(device_ids), gpu_config["inst_per_gpu"])
-    print("accumu_steps", accumu_steps)
-
-    for batch_idx in range(pretraining_config["batches_per_epoch"]):
-
-        optimizer.zero_grad()
-
-        batch = cache_batch[batch_idx]
-        cache_batch[batch_idx] = None
-
-        inst_pass += list(batch.values())[0].size(0)
-        summary = {}
-        
-        step_t0 = time.time()
-
-        for percent, inputs in utils.partition_inputs(batch, accumu_steps, True):
-            outputs = model(**inputs)
-            for key in outputs:
-                outputs[key] = outputs[key].mean() * percent
-            utils.backward(outputs["loss"], amp_scaler)
-            utils.add_output_to_summary(outputs, summary)
-        
-        utils.optimizer_step(optimizer, lr_scheduler, amp_scaler)
-        del batch
-
-        step_t1 = time.time()
-
-        summary["idx"] = epoch * pretraining_config["batches_per_epoch"] + batch_idx
-        summary["batch_idx"] = batch_idx
-        summary["epoch"] = epoch
-        summary["time"] = round(step_t1 - step_t0, 4)
-        summary["inst_pass"] = inst_pass
-        summary["learning_rate"] = round(optimizer.param_groups[0]["lr"], 8)
-        summary["time_since_start"] = round(time.time() - init_t, 4)
-
-        log_f.write(json.dumps(summary, sort_keys = True) + "\n")
-
-        if batch_idx % pretraining_config["batches_per_report"] == 0:
-            print(json.dumps(summary, sort_keys = True), flush = True)
-            log_f.flush()
-
-    dump_path = os.path.join(checkpoint_dir, f"cp-{epoch:04}.cp")
-    torch.save({
-        "model_state_dict":model.module.state_dict()
-    }, dump_path.replace(".cp", ".model"))
-    torch.save({
-        "model_state_dict":model.module.state_dict(),
-        "optimizer_state_dict":optimizer.state_dict(),
-        "lr_scheduler_state_dict":lr_scheduler.state_dict(),
-        "epoch":epoch,
-        "inst_pass":inst_pass
-    }, dump_path)
-    print(f"Dump {dump_path}", flush = True)
+predicted_token_id = logits[0, mask_token_index].argmax(axis=-1)
+tokenizer.decode(predicted_token_id)
