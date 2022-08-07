@@ -37,26 +37,7 @@ class ModelForMaskedLM(nn.Module):
         with torch.cuda.amp.autocast(enabled = self.enable_amp):
 
             token_out = self.model(input_ids)
-
-            mlm_scores = self.mlm(token_out)
-
-            label_mask = (labels != -100).float()
-            valid_count = torch.sum(label_mask) + 1e-6
-            batch_size = torch.tensor(mlm_scores.size(0), dtype = torch.float, device = mlm_scores.device)
-
-            mlm_loss_fct = torch.nn.CrossEntropyLoss(reduction = "none")
-            mlm_loss = mlm_loss_fct(mlm_scores.reshape(-1, self.vocab_size), labels.reshape(-1))
-            mlm_loss = torch.sum(mlm_loss * label_mask.reshape(-1)) / valid_count
-
-            mlm_correct = (mlm_scores.argmax(dim = -1) == labels).to(torch.float32)
-            mlm_accu = torch.sum(mlm_correct * label_mask) / valid_count
-
-            outputs = {
-                "loss":mlm_loss, "mlm_accu":mlm_accu,
-                "valid_count":valid_count, "batch_size_per_device":batch_size
-            }
-
-            outputs = {key:value[None] for key, value in outputs.items()}
+            outputs = self.mlm(token_out)
 
         return outputs
 
