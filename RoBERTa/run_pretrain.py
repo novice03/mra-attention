@@ -91,14 +91,14 @@ with torch.no_grad():
 print('logits', logits, logits.size())
 
 # retrieve index of [MASK]
-mask_token_index = (inputs.input_ids == tokenizer.mask_token_id)[0].nonzero(as_tuple=True)[0]
+mask_token_index = (inputs.input_ids == tokenizer.mask_token_id)[0].nonzero(as_tuple=True)[0].item()
 print(mask_token_index)
 mask_token_logits = logits[0, mask_token_index, :].detach().cpu()
 
 print(mask_token_logits.size())
 
 top_5_tokens = np.argsort(-mask_token_logits)[:5].tolist()
-#print(top_5_tokens)
+print(top_5_tokens)
 
 #for token in top_5_tokens:
 #    print(f">>> {text.replace(tokenizer.mask_token, tokenizer.decode(token))}")
