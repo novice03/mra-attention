@@ -81,7 +81,7 @@ elif config["from_pretrained_roberta"]:
 else:
     print("Model randomly initialized", flush = True)
 
-tokenizer = RobertaTokenizerFast.from_pretrained("roberta-base")
+tokenizer = RobertaTokenizerFast.from_pretrained("./roberta-base")
 text = args.sentence
 
 inputs = tokenizer(text, return_tensors="pt", padding = 'max_length')
