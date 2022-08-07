@@ -12,6 +12,7 @@ import torch
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model", type = str, help = "model", dest = "model", required = True)
+parser.add_argument("--sentence", type = str, default = "The <mask> of Belgium is Brussels.", required = False)
 args = parser.parse_args()
 
 with open(os.path.join(args.model, 'config.json'), 'r') as f:
@@ -81,7 +82,7 @@ else:
     print("Model randomly initialized", flush = True)
 
 tokenizer = RobertaTokenizerFast.from_pretrained("roberta-base")
-text = "This is a great <mask>."
+text = args.sentence
 
 inputs = tokenizer(text, return_tensors="pt", padding = 'max_length')
 
