@@ -82,7 +82,7 @@ else:
 
 tokenizer = RobertaTokenizerFast.from_pretrained("roberta-base")
 
-inputs = tokenizer("The [MASK] of France is Paris.", return_tensors="pt").input_ids
+inputs = tokenizer("The [MASK] of France is Paris.", return_tensors="pt", padding = 'max_length').input_ids
 
 with torch.no_grad():
     logits = model(inputs)
