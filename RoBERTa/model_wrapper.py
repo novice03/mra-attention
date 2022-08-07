@@ -32,7 +32,7 @@ class ModelForMaskedLM(nn.Module):
         self.model = Model(config)
         self.mlm = MLMHead(config, self.model.embeddings.word_embeddings)
 
-    def forward(self, input_ids, labels):
+    def forward(self, input_ids):
 
         with torch.cuda.amp.autocast(enabled = self.enable_amp):
 
