@@ -81,8 +81,9 @@ else:
     print("Model randomly initialized", flush = True)
 
 tokenizer = RobertaTokenizerFast.from_pretrained("roberta-base")
+text = "The <mask> of Belgium is Brussels."
 
-inputs = tokenizer("This is a great <mask>.", return_tensors="pt", padding = 'max_length')
+inputs = tokenizer(text, return_tensors="pt", padding = 'max_length')
 
 with torch.no_grad():
     logits = model(inputs.input_ids)
@@ -91,6 +92,9 @@ print('logits', logits, logits.size())
 
 # retrieve index of [MASK]
 mask_token_index = (inputs.input_ids == tokenizer.mask_token_id)[0].nonzero(as_tuple=True)[0]
+mask_token_logits = logits[0, mask_token_index, :]
 
-predicted_token_id = logits[0, mask_token_index].argmax(axis=-1)
-print(predicted_token_id, tokenizer.decode(predicted_token_id))
+top_5_tokens = np.argsort(-mask_token_logits)[:5].tolist()
+
+for token in top_5_tokens:
+    print(f">>> {text.replace(tokenizer.mask_token, tokenizer.decode([token]))}")
