@@ -81,7 +81,7 @@ else:
     print("Model randomly initialized", flush = True)
 
 tokenizer = RobertaTokenizerFast.from_pretrained("roberta-base")
-text = "The <mask> of Belgium is Brussels."
+text = "This is a great <mask>."
 
 inputs = tokenizer(text, return_tensors="pt", padding = 'max_length')
 
