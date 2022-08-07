@@ -92,6 +92,7 @@ print('logits', logits, logits.size())
 
 # retrieve index of [MASK]
 mask_token_index = (inputs.input_ids == tokenizer.mask_token_id)[0].nonzero(as_tuple=True)[0]
+print(mask_token_index)
 mask_token_logits = logits[0, mask_token_index, :].detach().cpu()
 
 print(mask_token_logits.size())
