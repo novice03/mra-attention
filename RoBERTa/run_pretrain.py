@@ -95,6 +95,7 @@ mask_token_index = (inputs.input_ids == tokenizer.mask_token_id)[0].nonzero(as_t
 mask_token_logits = logits[0, mask_token_index, :].detach().cpu()
 
 top_5_tokens = np.argsort(-mask_token_logits)[:5].tolist()
+print(top_5_tokens)
 
-for token in top_5_tokens:
-    print(f">>> {text.replace(tokenizer.mask_token, tokenizer.decode(token))}")
+#for token in top_5_tokens:
+#    print(f">>> {text.replace(tokenizer.mask_token, tokenizer.decode(token))}")
