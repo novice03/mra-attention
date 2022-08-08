@@ -83,6 +83,7 @@ else:
 
 tokenizer = RobertaTokenizerFast.from_pretrained("./roberta-base")
 text = args.sentence
+model.eval()
 
 inputs = tokenizer(text, return_tensors="pt", padding = 'max_length')
 
