@@ -100,7 +100,7 @@ def mra2_attention(
 
     with torch.no_grad():
         low_resolution_logit_normalized = low_resolution_logit - low_resolution_logit_row_max
-        print('low_resolution_logit_normalized', low_resolution_logit_normalized)
+        #print('low_resolution_logit_normalized', low_resolution_logit_normalized)
         print(num_blocks, approx_mode, initial_prior_first_n_blocks, initial_prior_diagonal_n_blocks)
         indices, high_resolution_mask = get_block_idxes(low_resolution_logit_normalized, num_blocks, approx_mode, initial_prior_first_n_blocks, initial_prior_diagonal_n_blocks)
 
