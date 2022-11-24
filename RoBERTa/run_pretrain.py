@@ -21,7 +21,7 @@ with open(os.path.join("models", "mra2", args.model, 'config.json'), 'r') as f:
 model_config = config["model"]
 pretraining_config = config["pretraining_setting"]
 gpu_config = config["gpu_setting"]
-checkpoint_dir = os.path.join(args.model, 'model')
+checkpoint_dir = os.path.join("models", "mra2", args.model, 'model')
 dataset = config["dataset"]
 
 if not os.path.exists(checkpoint_dir):
