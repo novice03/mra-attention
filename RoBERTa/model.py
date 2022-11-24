@@ -34,6 +34,8 @@ class Embeddings(nn.Module):
         position_ids = torch.arange(seq_len, dtype = torch.long, device = input_ids.device)[None, :].repeat(batch_size, 1) + 2
         type_ids = torch.zeros(input_ids.size(), dtype = torch.long, device = input_ids.device)
 
+        print('input_ids', input_ids, 'position_ids', position_ids, 'type_ids', type_ids)
+
         X_token = self.word_embeddings(input_ids)
         X_pos = self.position_embeddings(position_ids)
         X_seq = self.token_type_embeddings(type_ids)
