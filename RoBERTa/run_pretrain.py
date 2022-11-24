@@ -12,7 +12,6 @@ import torch
 import random 
 
 seed = 0
-
 torch.manual_seed(seed)
 torch.cuda.manual_seed(seed)
 torch.backends.cudnn.deterministic = True
@@ -92,7 +91,7 @@ elif config["from_pretrained_roberta"]:
 else:
     print("Model randomly initialized", flush = True)
 
-tokenizer = RobertaTokenizerFast.from_pretrained("./roberta-base")
+tokenizer = RobertaTokenizerFast.from_pretrained("roberta-base")
 text = args.sentence
 model.eval()
 
