@@ -110,7 +110,7 @@ def mra2_attention(
     high_resolution_attn = torch.exp(high_resolution_logit)
     high_resolution_attn_out = SparseDenseMM.operator_call(high_resolution_attn, indices, V, num_block_per_row)
     high_resolution_normalizer = ReduceSum.operator_call(high_resolution_attn, indices, num_block_per_row, num_block_per_row)
-    print('high resoltuion', high_resolution_normalizer)
+    #print('high resoltuion', high_resolution_normalizer)
 
     if approx_mode == "full":
         low_resolution_attn = torch.exp(low_resolution_logit - low_resolution_logit_row_max - 1e4 * high_resolution_mask) * token_count[:, None, :]
