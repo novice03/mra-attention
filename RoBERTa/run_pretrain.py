@@ -9,6 +9,17 @@ import argparse
 import utils
 from transformers import RobertaTokenizerFast
 import torch
+import random 
+
+seed = 0
+
+torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = True
+random.seed(seed)
+os.environ['PYTHONHASHSEED'] = str(seed)
+np.random.seed(seed)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model", type = str, default = "base-512-4", help = "model", dest = "model", required = True)
