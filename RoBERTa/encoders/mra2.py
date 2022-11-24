@@ -69,6 +69,8 @@ class Attention(nn.Module):
         K = self.split_heads(self.W_k(X))
         V = self.split_heads(self.W_v(X))
 
+        print('query', Q, 'key', K, 'value', V)
+
         with torch.cuda.amp.autocast(enabled = False):
             attn_out = mra2_attention(
                 Q.float(), K.float(), V.float(), mask.float(), self.num_block,
