@@ -55,6 +55,7 @@ class Model(nn.Module):
 
     def forward(self, input_ids, sentence_mask = None):
         X = self.embeddings(input_ids)
+        print('emebddings', X)
         if sentence_mask is None:
             sentence_mask = torch.ones_like(input_ids)
         X = self.backbone(X, sentence_mask)
