@@ -76,6 +76,7 @@ class Attention(nn.Module):
                 initial_prior_first_n_blocks = self.initial_prior_first_n_blocks,
                 initial_prior_diagonal_n_blocks = self.initial_prior_diagonal_n_blocks
             )
+            print('attn out', attn_out)
 
         attn_out = self.combine_heads(attn_out)
 
