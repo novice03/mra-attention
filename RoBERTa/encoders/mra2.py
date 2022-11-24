@@ -70,6 +70,7 @@ class Attention(nn.Module):
         V = self.split_heads(self.W_v(X))
 
         print('query', Q)
+        print(self.num_block, self.approx_mode, self.initial_prior_first_n_blocks, self.initial_prior_diagonal_n_blocks)
 
         with torch.cuda.amp.autocast(enabled = False):
             attn_out = mra2_attention(
