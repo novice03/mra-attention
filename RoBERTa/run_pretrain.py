@@ -27,7 +27,7 @@ parser.add_argument("--model", type = str, default = "base-512-4", help = "model
 parser.add_argument("--sentence", type = str, default = "Belgium is a country in Europe. The <mask> of Belgium is Brussels. It is a beautiful city.", required = False)
 args = parser.parse_args()
 
-args.sentence = "Apples grown from seed tend to be very different from those of their parents, and the resultant fruit frequently lacks desired characteristics. Generally, apple cultivars are propagated by clonal grafting onto rootstocks. Apple trees grown without rootstocks tend to be larger and much slower to fruit after planting. Rootstocks are used to control the speed of growth and the size of the resulting tree, allowing for easier <mask>."
+args.sentence = "Apples grown from seed tend to be very different from those of their parents, and the resultant fruit frequently lacks desired characteristics. Generally, apple cultivars are propagated by clonal grafting onto rootstocks. Apple trees grown without rootstocks tend to be larger and much slower to fruit after planting. Rootstocks are used to control the speed of growth and the size of the resulting tree, allowing for easier <mask>. There are more than 7,500 known cultivars of apples. Different cultivars are bred for various tastes and uses, including cooking, eating raw, and cider production. Trees and fruit are prone to a number of fungal, bacterial, and pest problems, which can be controlled by a number of organic and non-organic means. In 2010, the fruit's genome was sequenced as part of research on disease control and selective breeding in apple production."
 
 with open(os.path.join("models", "mra2", args.model, 'config.json'), 'r') as f:
     config = json.load(f)
