@@ -48,6 +48,7 @@ class Attention(nn.Module):
 
     def forward(self, X, mask):
         print('X', X)
+        print('X trans', self.W_q(X))
         batch_size, seq_len, dim = X.shape
 
         if self.input_shape is not None:

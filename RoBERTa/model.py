@@ -43,7 +43,7 @@ class Embeddings(nn.Module):
         X_seq = self.token_type_embeddings(type_ids)
         #print('token type', X_seq)
         X = X_token + X_pos + X_seq
-        print('sum', X)
+        #print('sum', X)
 
         if self.has_project:
             X = self.dense(X)
