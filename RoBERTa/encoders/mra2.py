@@ -47,7 +47,8 @@ class Attention(nn.Module):
         return "\n".join(rep)
 
     def forward(self, X, mask):
-        print('X', X)
+        print('linear weight', self.W_q.weight)
+        print('linear bias', self.W_q.bias)
         print('X trans', self.W_q(X))
         batch_size, seq_len, dim = X.shape
 
