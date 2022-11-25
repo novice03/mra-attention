@@ -47,8 +47,6 @@ class Attention(nn.Module):
         return "\n".join(rep)
 
     def forward(self, X, mask):
-        print('hidden states', X)
-
         batch_size, seq_len, dim = X.shape
 
         if self.input_shape is not None:
