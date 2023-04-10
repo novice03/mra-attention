@@ -23,7 +23,7 @@ np.random.seed(seed)
 torch.set_printoptions(precision=10)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--model", type = str, default = "base-512-4", help = "model", dest = "model")
+parser.add_argument("--model", type = str, default = "base-512-4", help = "model", dest = "model", required = False)
 parser.add_argument("--sentence", type = str, default = "Belgium is a country in Europe. The <mask> of Belgium is Brussels. It is a beautiful city.", required = False)
 args = parser.parse_args()
 
