@@ -37,19 +37,21 @@ class Embeddings(nn.Module):
         print('input_ids', input_ids, 'position_ids', position_ids, 'type_ids', type_ids)
 
         X_token = self.word_embeddings(input_ids)
-        #print('input embed', X_token)
+        print('input embed', X_token)
         X_pos = self.position_embeddings(position_ids)
-        #print('pos embed', X_pos)
+        print('pos embed', X_pos)
         X_seq = self.token_type_embeddings(type_ids)
-        #print('token type', X_seq)
+        print('token type', X_seq)
         X = X_token + X_pos + X_seq
-        #print('sum', X)
+        print('sum', X)
 
         if self.has_project:
             X = self.dense(X)
 
         X = self.norm(X)
         X = self.dropout(X)
+
+        print('final emb', X)
 
         return X
 
