@@ -1,5 +1,5 @@
 {
-    "from_cp": "/u/p/u/pulijala/mra-2-512-4.model",
+    "from_cp": "/nobackup/pulijala/mra-2-512-4.model",
     "from_pretrained_roberta": false,
     "model": {
         "mixed_precision": true,
